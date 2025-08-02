@@ -1,0 +1,44 @@
+{% extends "base.html"%}
+{%block content%}
+<div class="container d-flex flex-column align-items-center">
+    <h1>REGISTER</h1>
+    <form id="register-form" class="w-50" >
+        {% csrf_token %}
+        <div class="mb-3 ">
+            <label class="form-label">Номер телефона</label>
+            <input type="text" id="username" class="form-control" name="username" placeholder="Введите номер телефона" required>          
+        </div>
+    </form>
+    <button id="register-button"  class="btn btn-primary">Введите номер телефона</button>
+</div>
+    
+    <script >
+
+        document.getElementById('register-button').addEventListener('click', () => {
+                event.preventDefault();
+
+                var username = $('#username').val();
+
+                if(phonenumber(username)){
+                    localStorage.setItem('number', username); 
+                    window.location.href = 'http://127.0.0.1:8000/jwt/';               
+                }
+                else{
+                    alert("Not a valid Phone Number");
+                }
+        })
+
+
+
+        
+        
+
+        function phonenumber(phoneNumber) {
+    
+            const phoneRegex = /^(?:\+?\d{1,3})?[-.\s]?(\(?\d{3}\)?)[-.\s]?\d{3}[-.\s]?\d{4}$/;
+    
+            return phoneRegex.test(phoneNumber);
+        }
+
+    </script>
+{%endblock%}

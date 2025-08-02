@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+
+    <div id="container" class ="post-container d-flex flex-column align-items-center">
+        <div class="post">
+            <div id='username' class="fw-bold mt-2 text-center"></>          
+        </div>
+        <div id="invite_code" class="post d-flex flex-column align-items-center ">
+            <form id= 'invite' class="w-50 ">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <h1 class="form-label text-center">Ваш инвайт-код</h1>
+                    <input type="text" id="invite_code_text" class="form-control" name="invite_code" placeholder="Введите инвайт-код" required>
+                </div>
+                <button type='button' id="invite-button" class="btn btn-primary w-100 ">Invite</button>
+                <div id="error" class="alert alert-danger d-none">
+            </form>                               
+        </div>
+        
+        
+
+    </div>
+    <div id="numbers" class="post-container d-flex flex-column align-items-center">
+        <h1 class="fw-bold mt-2 text-center">Номера  с вашим инвайт-кодом</h1>
+    </div>
+
+
+{% endblock %}
+
+
+
+{%block js%}
+    <script>
+        function getUserId() {
+            const url = new URL(window.location.href); // Создаем объект URL
+            const pathSegments = url.pathname.split('/'); // Разделяем путь по символу '/'
+            const UserId = pathSegments[pathSegments.length - 2]; // Извлекаем предпоследний элемент
+            console.log(url);
+
+            return UserId;
+
+        }
+
+        async function Invite(invite_code, phone_number) {
+            response = await fetch(`http://127.0.0.1:8000/api/invite/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                body: JSON.stringify({
+                    invite_code: invite_code,
+                    phone_number: phone_number
+                })
+            })
+            if(response.status === 400){
+                document.getElementById('error').classList.remove('d-none');
+                data = await response.json();
+                document.getElementById('error').innerHTML = data.detail;         
+            }
+            if(response.status === 401){
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                localStorage.removeItem('user_id');
+                window.location.href = 'http://127.0.0.1:8000/register/';
+                
+            }
+            
+            data = await response.json();
+            if (response.status === 200) {
+                alert('Успешно');
+                form= document.getElementById('invite');
+                form.remove();
+                document.getElementById('invite_code').innerHTML = `
+                    <h1 class="fw-bold mt-2 text-center"> Исползованный инвайт-код</h1>
+                    <h1 class="fw-bold mt-2 text-center">${invite_code}</h1>
+                `;
+                
+                
+            }
+        }
+
+        
+        async function FetchUser(id){
+            await fetch(`http://127.0.0.1:8000/api/user/`+getUserId()+`/`)
+            .then(response => response.json())
+            .then(data => {
+                localStorage.setItem('username', data.phone_number);
+                console.log(data);
+                document.getElementById('username').innerHTML = `
+                    <h1>${data.phone_number}</h1>
+                    <h1>${data.invite_code}</h1>
+                    `;
+                if(localStorage.getItem('user_id') != id){
+                    form = document.getElementById('invite');
+                    form.remove();
+                }
+                if(data.users.length === 0){
+                    let div = document.getElementById('numbers');
+                    div.remove();
+                       
+                }
+                if(data.used_invite_code != null){
+                    document.getElementById('invite_code').innerHTML = '';
+                    let div = document.createElement('div');
+                    div.innerHTML = `
+                        <h1 class="fw-bold mt-2 text-center"> Исползованный инвайт-код</h1>
+                        <h1 class="fw-bold mt-2 text-center">${data.used_invite_code}</h1>
+                    `;
+                    document.getElementById('invite_code').appendChild(div);
+                }
+                data.users.forEach(element => {
+                    let div = document.getElementById('numbers').appendChild(document.createElement('div'));
+                    div.innerHTML += `
+                    <div>
+                    <a href="http://127.0.0.1:8000/user/${element.id}/">
+                        <h1 class="fw-bold mt-2 text-center">${element.phone_number}</h1>
+                    </a>
+                    </div>
+                    `;
+                    document.getElementById('numbers').appendChild(div);
+                })
+            })
+            .catch(error => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                localStorage.removeItem('user_id');
+                window.location.href = 'http://127.0.0.1:8000/register/';
+            });
+
+        }
+
+        async function verify(token){
+            response = await fetch(`http://127.0.0.1:8000/api/token/verify/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    token: token
+                })
+            })
+            if (response.status != 200) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                localStorage.removeItem('user_id');
+                window.location.href = 'http://127.0.0.1:8000/register/';
+            }
+            console.log(token);
+            console.log(response);            
+        }
+
+        document.getElementById('invite-button').addEventListener('click', () => {
+            event.preventDefault();
+            var invite_code = $('#invite_code_text').val();
+            var phone_number = localStorage.getItem('username');
+            Invite(invite_code, phone_number);
+        });
+          
+
+        document.addEventListener('DOMContentLoaded', () => {
+            verify(localStorage.getItem('token'));
+            FetchUser(localStorage.getItem('user_id'));
+            
+        })
+
+
+        
+    </script>
+
+{%endblock%}
