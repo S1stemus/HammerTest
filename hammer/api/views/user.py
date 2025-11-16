@@ -48,9 +48,12 @@ class UserShowView(APIView):
         }
     )
     def get(self, request, pk):
-        user = User.objects.get(pk=pk)
-        serializer = UserShowSerializer(user)
-        return Response(serializer.data)
+        try:           
+            user = User.objects.get(pk=pk)
+            serializer = UserShowSerializer(user)
+            return Response(serializer.data)
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found'},status=status.HTTP_404_NOT_FOUND)
 class UserInviteView(APIView):
     permission_classes = [IsAuthenticated]
     @extend_schema(
