@@ -24,8 +24,8 @@ environ.Env.read_env()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-SECRET_KEY = env("SECRET_KEY", cast=str)
-DEBUG = env("DEBUG", cast=bool, default=False)
+SECRET_KEY = 'django-insecure-n*h($s3u0+o*mn_s=k+b&3$1k2pe2%61&_*f4&pj3a)3v_yi27'
+DEBUG = env("DEBUG", cast=bool, default=True)
 
 ALLOWED_HOSTS = []
 
@@ -85,7 +85,7 @@ DATABASES = {
         "NAME": env("DB_NAME", cast=str),
         "USER": env("DB_USER", cast=str),
         "PASSWORD": env("DB_PASSWORD", cast=str),
-        "HOST": "localhost",
+        "HOST": "db",
         "PORT": 5432,
     }
 }

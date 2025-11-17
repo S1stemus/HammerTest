@@ -72,15 +72,15 @@ class UserInviteView(APIView):
         if User.objects.filter(invite_code=invite_code).exists():
             user = User.objects.get(phone_number=phone_number)
             if user.invite_code == invite_code:
-                return Response({'detail': 'That`s your invite code'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'detail': 'Это ваш инвайт-код'}, status=status.HTTP_400_BAD_REQUEST)
             if user.used_invite_code != None:
-                return Response({'detail': 'Invite code is already used'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'detail': 'Вы уже использовали инвайт-код'}, status=status.HTTP_400_BAD_REQUEST)
             if user == None:
-                return Response({'detail': 'Phone number is not valid'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'detail': 'Неверный номер'}, status=status.HTTP_400_BAD_REQUEST)
             user.used_invite_code = invite_code
             user.save()
         else:
-            return Response({'detail': 'Invite code is not valid'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'неверный инвайт-код'}, status=status.HTTP_400_BAD_REQUEST)
         serializer = UserShowSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
