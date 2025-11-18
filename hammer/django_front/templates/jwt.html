@@ -98,7 +98,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             username = localStorage.getItem('number');
             token = localStorage.getItem('token');
-            if(username===null ||  token===null){
+            if(username===null ||  !(token===null)){
                 window.location.href = 'http://127.0.0.1:8000/register/';               
             }
             
